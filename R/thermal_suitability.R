@@ -23,11 +23,11 @@ library(terra)
 ## Calling in data -----------------------
 
 ## survey data
-survdat <- readRDS("/home/mgrezlik/EDAB_Dev/beet/surveyNoLengths.rds")
+survdat <- readRDS("/home/mgrezlik/EDAB_Datasets/Workflows/surveyNoLengthsData.rds")
 survdat <- survdat$survdat
 
 ## species names
-species <- readRDS("/home/mgrezlik/EDAB_Datasets/SOE_species_list_24.rds")
+species <- readRDS("/home/mgrezlik/EDAB_Datasets/Workflows/SOE_species_list_24.rds")
 
 ### filter for NEFMC managed species
 ne_species <- species  |> 
@@ -39,29 +39,29 @@ ne_species <- species  |>
 survdat_mgmt <- survdat |> 
   inner_join(ne_species, by = "SVSPP")
 
-## bottom temp data
-# nc_path <- "/home/mgrezlik/EDAB_Datasets/GLORYS/GLORYS_daily"
-# nc_files <- list.files(nc_path, pattern = "GLORYS_daily_BottomTemp_\\d{4}\\.nc$", full.names = TRUE)
+# ## bottom temp data
+#  nc_path <- "/home/mgrezlik/EDAB_Datasets/GLORYS/GLORYS_daily"
+#  nc_files <- list.files(nc_path, pattern = "GLORYS_daily_BottomTemp_\\d{4}\\.nc$", full.names = TRUE)
 # 
-# first_file <- terra::rast(nc_files[1])
-# first_file
-
-# loop over years
-# for (f in nc_files) {
-#   message("Processing file: ", f)
-#   
-#   bt <- terra::rast(f)   # daily bottom temps for one year
-#   
-#   bt_mean <- terra::mean(bt)
-#   
-#   # Save raster
-#   out_name <- gsub(".nc", "_mean.tif", basename(f))
-#   
-#   # make sure output folder exists
-#   if (!dir.exists("02_intermediates")) dir.create("02_intermediates")
-#   
-#   terra::writeRaster(bt_mean, file.path("02_intermediates", out_name), overwrite = TRUE)
-# }
+#  first_file <- terra::rast(nc_files[1])
+#  first_file
+# 
+# # loop over years
+#  for (f in nc_files) {
+#    message("Processing file: ", f)
+# 
+#    bt <- terra::rast(f)   # daily bottom temps for one year
+# 
+#    bt_mean <- terra::mean(bt)
+# 
+#    # Save raster
+#    out_name <- gsub(".nc", "_mean.tif", basename(f))
+# 
+#    # make sure output folder exists
+#    if (!dir.exists("inputs")) dir.create("inputs")
+# 
+#    terra::writeRaster(bt_mean, file.path("inputs", out_name), overwrite = TRUE)
+#  }
 
 
 
@@ -175,7 +175,7 @@ for (f in nc_files) {
   rm(bt, out)
   gc()
   
-  saveRDS(results[[year]], file.path("02_intermediates", paste0("indicators_", year, ".rds")))
+  saveRDS(results[[year]], file.path("thresholds", paste0("indicators_", year, ".rds")))
 }
 
 indicators <- bind_rows(results)
@@ -211,7 +211,7 @@ indicators <- bind_rows(results)
 # loop through plots of all species and indicators
 
 # Ensure folder exists
-if (!dir.exists("05_images")) dir.create("05_images")
+if (!dir.exists("images")) dir.create("images")
 
 # List of indicators to plot
 indicator_vars <- c("perc_within_hist", "perc_within_year", "stress_index_hist", "stress_index_year")
@@ -232,7 +232,7 @@ for (sp in unique(indicators$species)) {
       theme_minimal(base_size = 12)
     
     # Define file name
-    file_name <- paste0("05_images/", gsub(" ", "_", sp), "_", ind, ".png")
+    file_name <- paste0("images/", gsub(" ", "_", sp), "_", ind, ".png")
     
     # Save plot
     ggsave(file_name, plot = p, width = 6, height = 4, dpi = 300)
